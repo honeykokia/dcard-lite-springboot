@@ -23,7 +23,7 @@ public class User {
     @Column(name = "user_id", nullable = false, updatable = false)
     private Long userId;
 
-    @Column(name = "email", nullable = false, length = 100, unique = true)
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
 
     @Column(name = "password_hash", nullable = false, length = 200)
@@ -43,9 +43,6 @@ public class User {
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
-        }
-        if (role == null) {
-            role = "USER";
         }
     }
 }
