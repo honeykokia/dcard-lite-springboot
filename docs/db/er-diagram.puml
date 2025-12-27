@@ -1,0 +1,12 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+entity User {
+  * user_id : int <<PK>>
+  --
+  * email : varchar
+  * password_hash : varchar
+  * display_name : varchar
+  * role : varchar
+  * created_at : datetime
+}
+@enduml
