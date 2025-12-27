@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.demo.common.validator.PasswordMatch;
 
 /**
  * DTO for User Registration Request.
@@ -14,10 +15,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@PasswordMatch(password = "password", confirmPassword = "confirmPassword", 
+               message = "Confirm password must match password")
 public class RegisterUserRequest {
 
     @NotBlank(message = "Name must not be blank")
     @Size(max = 20, message = "Name maximum length 20 characters")
+    // Pattern ensures name is not only digits or only symbols (at least one letter required)
     @Pattern(regexp = "^(?!\\d+$)(?![\\W_]+$).*$", 
              message = "Values consisting only of digits or only symbols are not allowed")
     private String name;
@@ -29,6 +33,7 @@ public class RegisterUserRequest {
 
     @NotBlank(message = "Password must not be blank")
     @Size(min = 8, max = 12, message = "Password length must be between 8 and 12 characters")
+    // Pattern ensures password contains at least one letter and at least one digit
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d).*$", 
              message = "Password must contain at least one letter and one digit")
     private String password;

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.demo.common.UserRole;
 
 import java.time.LocalDateTime;
 
@@ -36,7 +37,7 @@ public class User {
 
     @Column(name = "role", nullable = false, length = 10)
     @Builder.Default
-    private String role = "USER";
+    private String role = UserRole.USER;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -45,9 +46,6 @@ public class User {
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
-        }
-        if (role == null || role.isEmpty()) {
-            role = "USER";
         }
     }
 }
