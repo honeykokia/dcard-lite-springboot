@@ -129,17 +129,20 @@
     - Email or password is incorrect
 - 409 `EMAIL_ALREADY_EXISTS`
     - (code detail)
-    - Email is exists
+    - Email is existed
 ### DB Changes (MySQL + Liquibase)
 
 - Table: `users`
     - columns（填你要的最小集合）：
         - user_id (BIGINT, PK, auto increment, NOT NULL)
-        - email (VARCHAR(100), UK, NOT NULL)
+        - email (VARCHAR(100), NOT NULL)
         - password_hash (VARCHAR(200), NOT NULL)
         - display_name (VARCHAR(20), NOT NULL)
         - role (VARCHAR(10), NOT NULL, default='USER')
         - created_at (DATETIME(6), NOT NULL)
+    - constraints:
+        - PK: `pk_users` (user_id)
+        - UK: `uq_users_email` (email)
 ### Use Case Boundary
 #### Use Case: Register
 - Use Case Name：
