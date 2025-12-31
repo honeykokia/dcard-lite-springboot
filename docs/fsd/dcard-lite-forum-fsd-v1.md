@@ -31,15 +31,17 @@
 - 在 95% 請求下，列表查詢回應時間 ≤ 300ms（本機/小規模環境基準）。
 
 
-### 1.3 專案的技術堆疊
+### **1.3 專案的技術堆疊**
 
 - **後端框架**：Spring Boot 3.x（REST API、Validation、Security）
+
+- **Java 版本**：Java 17 LTS
 
 - **前端框架**：Vue 3（列表/表單/互動）
 
 - **資料庫**：MySQL（關聯建模、索引）
 
-- **快取/排名（可選）**：Redis（熱門榜/按讚計數快取）
+- **快取/排名（可選）**：Redis（用於熱門榜與按讚計數快取）
 
 - **測試策略**：JUnit 5（單元測試）、Mockito（mock）、Testcontainers（可選，用 DB integration）
 
