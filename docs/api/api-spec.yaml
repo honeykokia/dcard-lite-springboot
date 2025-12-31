@@ -4,7 +4,8 @@ info:
   version: 1.0.0
   description: Based on docs/rp/RP-001-register-login.md
 servers:
-  - url: /
+  - url: http://localhost:8080
+    description: Local server
 paths:
   /users/register:
     post:

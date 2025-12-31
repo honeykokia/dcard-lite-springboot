@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.Instant;
 
 import org.example.demo.common.api.GlobalExceptionHandler;
+import org.example.demo.common.config.SecurityConfig;
 import org.example.demo.user.dto.LoginResponse;
 import org.example.demo.user.dto.RegisterUserResponse;
 import org.example.demo.user.exception.AuthenticationFailedException;
@@ -27,7 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(controllers = UserController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class UserControllerTest {
 
     @Autowired
