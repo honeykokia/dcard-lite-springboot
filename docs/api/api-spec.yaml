@@ -171,6 +171,110 @@ paths:
                     code: "AUTHENTICATION_FAILED"
                     path: "/users/login"
                     timestamp: "2025-12-25T10:00:00Z"
+  /boards:
+    get:
+      tags: [Boards]
+      summary: List boards
+      operationId: listBoards
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-based). Default 1.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Page size. Default 20. Max 100.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: keyword
+          in: query
+          required: false
+          description: Optional keyword for board name contains search. Blank is treated as not provided. Max length 50 after trim.
+          schema:
+            type: string
+            maxLength: 50
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBoardsResponse'
+              examples:
+                success:
+                  value:
+                    page: 1
+                    pageSize: 20
+                    total: 2
+                    items:
+                      - boardId: 1
+                        name: "原神"
+                        description: "空月之歌-月之三"
+                      - boardId: 2
+                        name: "程式"
+                        description: "Java / Spring / 前端"
+                empty:
+                  value:
+                    page: 1
+                    pageSize: 20
+                    total: 0
+                    items: []
+        '400':
+          description: Bad Request (query validation failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                page_invalid:
+                  value:
+                    status: 400
+                    error: "Bad Request"
+                    message: "VALIDATION_FAILED"
+                    code: "PAGE_INVALID"
+                    path: "/boards"
+                    timestamp: "2025-12-25T10:00:00Z"
+                page_size_invalid:
+                  value:
+                    status: 400
+                    error: "Bad Request"
+                    message: "VALIDATION_FAILED"
+                    code: "PAGE_SIZE_INVALID"
+                    path: "/boards"
+                    timestamp: "2025-12-25T10:00:00Z"
+                keyword_invalid:
+                  value:
+                    status: 400
+                    error: "Bad Request"
+                    message: "VALIDATION_FAILED"
+                    code: "KEYWORD_INVALID"
+                    path: "/boards"
+                    timestamp: "2025-12-25T10:00:00Z"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internal_error:
+                  value:
+                    status: 500
+                    error: "Internal Server Error"
+                    message: "INTERNAL_ERROR"
+                    code: "INTERNAL_ERROR"
+                    path: "/boards"
+                    timestamp: "2025-12-25T10:00:00Z"
 
 components:
   schemas:
@@ -297,4 +401,47 @@ components:
           type: string
           format: date-time
           example: "2025-12-25T10:00:00Z"
+    BoardItem:
+      type: object
+      additionalProperties: false
+      required: [boardId, name, description]
+      properties:
+        boardId:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          maxLength: 50
+          example: "原神"
+        description:
+          type: string
+          maxLength: 200
+          example: "空月之歌-月之三"
+
+    ListBoardsResponse:
+      type: object
+      additionalProperties: false
+      required: [page, pageSize, total, items]
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 1
+          example: 1
+        pageSize:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+          example: 20
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+          example: 135
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoardItem'
 
