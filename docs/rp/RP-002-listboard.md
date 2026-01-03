@@ -3,7 +3,7 @@
 ## SDD-Lite
 
 ### Goal
-1. 列出所有看板，並回傳board_id/name/description
+列出所有看板，並回傳board_id/name/description
 ### API Contract
 #### `GET /boards`
 ##### Request Query
@@ -71,15 +71,9 @@
 }
 ```
 
-註：`code` 可能為 `INVALID_NAME` / `INVALID_EMAIL` / `INVALID_PASSWORD` / `INVALID_CONFIRM_PASSWORD` 等，詳見 Error Mapping。
+註：本 RP 僅可能出現 `PAGE_INVALID / PAGE_SIZE_INVALID / KEYWORD_INVALID / INTERNAL_ERROR`
+
 ### Validation Rules
-- name
-    - 必填（不可為空字串 / 純空白；需先 `trim()`）
-    - 最大長度：50
-    - 限制內容：不接受純數字或只含符號
-- description
-    - 必填（不可為空字串 / 純空白）
-    - 最大長度：200
 - page
     - default = 1
     - 必須為整數且 `page >= 1`
@@ -95,14 +89,16 @@
 
 ### Error Mapping（Domain → HTTP）
 > 你的 error JSON 格式固定為：status）」與「code（詳細訊息）」要用什麼。
-- 400 `VALIDATION_FAILED`
+- 400 `PAGE_INVALID`
     - (code detail)
-    - page invalid
-    - page size invalid
-    - validation fail
+    - page < 1 或非整數
+- 400 `PAGE_SIZE_INVALID`
+    - pageSize 不在 1..100 或非整數
+- 400 `KEYWORD_INVALID`
+    - keyword 提供但 `trim()` 後長度不在 `1..50`
 - 500 `INTERNAL_ERROR`
     - (code detail)
-    - database connection error
+    - DB/Repository error 或未預期 error
 ### DB Changes (MySQL + Liquibase)
 
 - Table: `boards`
@@ -129,21 +125,23 @@
     - `pageSize`
     - `keyword`
 - Return Model：
-    - `page
+    - `page`
     - `pageSize`
     - `total`
     - `items[] { boardId, name, description }`
 
 ### Queries Needed (Repositories)
+> 最小可行版本先用 contains，效能需求之後再升級
 - BoardRepository
     - `Page<Board> findByNameContainingIgnoreCase(String keyword, Pageable pageable)`（有 keyword）
     - `Page<Board> findAll(Pageable pageable)`（無 keyword）
 
 ## ## Done Definition
 
-- `GET /boards` 回 `200`，JSON 格式固定 `{ items: [...] }`
-- 無資料時回 `{ items: [] }`
-- DB/系統錯誤會回 `500 INTERNAL_ERROR`（符合全域錯誤格式）
+- `GET /boards` 回 `200`，JSON 格式固定 `{ page, pageSize, total, items }`
+- 無資料時回 `200` + `total=0` + `items=[]`
+- query 不合法回 `400 VALIDATION_FAILED`（PAGE_INVALID / PAGE_SIZE_INVALID / KEYWORD_INVALID）
+- DB/系統錯誤回 `500 INTERNAL_ERROR`
 - TDD 綠
 - Swagger UI smoke test：`GET /boards` 可成功呼叫
 ---
@@ -181,7 +179,10 @@
     - Given：BoardRepository 丟 DataAccessException
     - Then：丟 InternalErrorException（映射 500）
 
-
+- UC-07 keyword 超長（trim 後 > 50）
+    - Given：keyword = "a".repeat(51)
+    - When：listBoards(page=1,pageSize=20,keyword=keyword)
+    - Then：丟InvalidKeywordException（code = `KEYWORD_INVALID`）
 ### Controller Contract Tests (thin)
 
 - CT-01 `GET /boards` 成功 → 200 + 分頁欄位齊全（GWT）
@@ -216,7 +217,7 @@
 
 - CT-03 `GET /boards?page=0` → 400 + VALIDATION_FAILED + PAGE_INVALID
     - Given
-        - 無（或宣告 service 不應被呼叫）
+        - verify(BoardService, never()).listBoards(any())
     - When
         - 呼叫 `GET /boards?page=0`
     - Then
@@ -228,7 +229,7 @@
 
 - CT-04 `GET /boards?pageSize=101` → 400 + VALIDATION_FAILED + PAGE_SIZE_INVALID
     - Given
-        - 無（service 不應被呼叫）
+        - verify(BoardService, never()).listBoards(any())
     - When
         - 呼叫 `GET /boards?pageSize=101`
     - Then
@@ -249,3 +250,14 @@
             - `message = "INTERNAL_ERROR"`
             - `code = "INTERNAL_ERROR"`
             - `path = "/boards"`
+              **CT-06 `GET /boards?keyword=<51chars>` → 400 + KEYWORD_INVALID**
+- Given
+    - verify(BoardService, never()).listBoards(any())
+- When
+    - 呼叫 GET /boards?keyword=` + `"a".repeat(51)
+- Then
+    - HTTP Status = `400 Bad Request`
+    - Response JSON：
+        - `message = "VALIDATION_FAILED"`
+        - `code = "KEYWORD_INVALID"`
+        - `path = "/boards"`
