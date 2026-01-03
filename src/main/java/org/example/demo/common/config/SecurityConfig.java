@@ -20,6 +20,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
                     .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/boards").permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 讓 preflight 過
                     .anyRequest().authenticated()
             );
