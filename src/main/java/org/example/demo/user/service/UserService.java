@@ -1,5 +1,6 @@
 package org.example.demo.user.service;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
@@ -95,19 +96,42 @@ public class UserService {
             return;
         }
 
-        String code = mapViolationToCode(violations.iterator());
+        String code = mapViolationToCode(violations);
         throw new ValidationFailedException(code);
     }
 
-    private String mapViolationToCode(Iterator<ConstraintViolation<Object>> it) {
-        ConstraintViolation<Object> v = it.next();
-        String annotation = v.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
-        String field = v.getPropertyPath() == null ? "" : v.getPropertyPath().toString();
+    private String mapViolationToCode(Collection<ConstraintViolation<Object>> violations) {
 
-        if ("PasswordMatches".equals(annotation)) {
-            return "INVALID_CONFIRM_PASSWORD";
+        // Prefer `password` field violations first
+        for (ConstraintViolation<Object> v : violations) {
+            String field = v.getPropertyPath() == null ? "" : v.getPropertyPath().toString();
+            if ("password".equals(field)) {
+                return mapSingleViolation(v);
+            }
         }
 
+        // Otherwise prefer any other field-level violation
+        for (ConstraintViolation<Object> v : violations) {
+            String field = v.getPropertyPath() == null ? "" : v.getPropertyPath().toString();
+            if (field != null && !field.isBlank()) {
+                return mapSingleViolation(v);
+            }
+        }
+
+        // Fall back to class-level violations such as PasswordMatches
+        for (ConstraintViolation<Object> v : violations) {
+            String annotation = v.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
+            if ("PasswordMatches".equals(annotation)) {
+                return "INVALID_CONFIRM_PASSWORD";
+            }
+        }
+
+        return "VALIDATION_FAILED";
+    }
+
+    private String mapSingleViolation(ConstraintViolation<Object> v) {
+        String annotation = v.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
+        String field = v.getPropertyPath() == null ? "" : v.getPropertyPath().toString();
         String normalizedField = normalizeFieldForCode(field);
 
         if ("NotBlank".equals(annotation) || "NotNull".equals(annotation)) {

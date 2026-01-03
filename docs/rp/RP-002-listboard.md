@@ -89,11 +89,13 @@
 
 ### Error Mapping（Domain → HTTP）
 > 你的 error JSON 格式固定為：status）」與「code（詳細訊息）」要用什麼。
-- 400 `VALIDATION_FAILED`
+- 400 `PAGE_INVALID`
     - (code detail)
     - page < 1 或非整數
+- 400 `PAGE_SIZE_INVALID`
     - pageSize 不在 1..100 或非整數
-    - validation fail
+- 400 `KEYWORD_INVALID`
+    - keyword 提供但 `trim()` 後長度不在 `1..50`
 - 500 `INTERNAL_ERROR`
     - (code detail)
     - DB/Repository error 或未預期 error
@@ -177,7 +179,10 @@
     - Given：BoardRepository 丟 DataAccessException
     - Then：丟 InternalErrorException（映射 500）
 
-
+- UC-07 keyword 超長（trim 後 > 50）
+    - Given：keyword = "a".repeat(51)
+    - When：listBoards(page=1,pageSize=20,keyword=keyword)
+    - Then：丟InvalidKeywordException（code = `KEYWORD_INVALID`）
 ### Controller Contract Tests (thin)
 
 - CT-01 `GET /boards` 成功 → 200 + 分頁欄位齊全（GWT）
@@ -245,3 +250,14 @@
             - `message = "INTERNAL_ERROR"`
             - `code = "INTERNAL_ERROR"`
             - `path = "/boards"`
+              **CT-06 `GET /boards?keyword=<51chars>` → 400 + KEYWORD_INVALID**
+- Given
+    - verify(BoardService, never()).listBoards(any())
+- When
+    - 呼叫 GET /boards?keyword=` + `"a".repeat(51)
+- Then
+    - HTTP Status = `400 Bad Request`
+    - Response JSON：
+        - `message = "VALIDATION_FAILED"`
+        - `code = "KEYWORD_INVALID"`
+        - `path = "/boards"`

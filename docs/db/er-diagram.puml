@@ -9,4 +9,12 @@ entity User {
   * role : varchar
   * created_at : datetime
 }
+
+entity Board {
+  * board_id : int <<PK>>
+  --
+  * name : varchar
+  * description : text
+  * created_at : datetime
+}
 @enduml
