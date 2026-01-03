@@ -6,7 +6,7 @@
 使用者註冊帳號密碼，進行登入後取得JWT Token
 ### API Contract
 #### `POST /users/register`
-**Request JSON**
+##### Request JSON
 ```json
 {
   "name" : "<string>",
@@ -16,7 +16,7 @@
 }
 ```
 
-**Success**
+##### Success
 - `201 Created`
 ```json
 {
@@ -28,7 +28,7 @@
 }
 ```
 
-**Errors**
+##### Errors
 - `400 Bad Request` (validation failed)
 ```json
 {
@@ -42,7 +42,7 @@
 ```
 
 #### `POST /users/login`
-**Request JSON**
+##### Request JSON
 ```json
 {
   "email": "<string>",
@@ -50,7 +50,7 @@
 }
 ```
 
-**Success**
+##### Success
 - `200 Success`
 ```json
 { "userId": 123,
@@ -60,7 +60,7 @@
 }
 ```
 
-**Errors**
+##### Errors
 - `400 Bad Request` (validation failed)
 ```json
 {
@@ -148,7 +148,7 @@
 - Use Case Name：
     - `RegisterUser`
 - Signature（入口）：
-    - `RegisterUserResult registerUser(RegisterUserRequest request)`
+    - `RegisterUserResponse registerUser(RegisterUserRequest request)`
 - Transaction：
     - `@Transactional`
         - 建議：`users` 新增一筆，未來如果有 `user_profiles` 之類也一起包在同一個交易。
@@ -162,7 +162,7 @@
 - Use Case Name：
     - `LoginUser`
 - Signature（入口）：
-    - `LoginResult login(LoginRequest request)`
+    - `LoginResponse login(LoginRequest request)`
 - Transaction：
   - `@Transactional(readOnly = true)`
 - Return Model（你要回哪些欄位）：
@@ -186,12 +186,6 @@
 ---
 ## TDD Lite
 ### Use Case Tests (behavior-focused)
-> 每條都用 Given-When-Then 寫清楚，這些就是你要 AI 產測試的清單。
-
-## TDD Lite
-
-### Use Case Tests (behavior-focused)
-> 每條都用 Given-When-Then 寫清楚，這些就是你要 AI 產測試的清單。
 
 - UC-01 成功建立使用者
     - Given：name="Leo", email="leo@example.com", password="abc12345", confirmPassword="abc12345"
